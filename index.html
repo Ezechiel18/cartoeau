@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CartoDyn — Accessibilité à l'eau potable | Commune d'Ogou 1</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <!-- CartoDyn CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══ IMPRESSION : EN-TÊTE (visible uniquement à l'impression) ══ -->
+<div class="print-header">
+    <img src="logo/logo_univ_ngaoundere.jfif" alt="Université de Ngaoundéré">
+    <img src="logo/logo_auf.png" alt="AUF">
+    <img src="logo/logo_ogou1.jfif" alt="Région d'Ogou">
+    <div class="print-header-text">
+        <h1>Analyse spatiale de l'accessibilité aux infrastructures en eau potable — Commune d'Ogou 1 au Togo</h1>
+        <p>Master GAGER · Université de Ngaoundéré · Ezéchiel Ametovena · 2026 · Données : Géodata Gouv Togo, RGPH-5, © OpenStreetMap</p>
+    </div>
+</div>
+<div class="print-footer">
+    <span>Projection : WGS 84 (EPSG:4326) · Sources : Géodata Gouv Togo · RGPH-5 · © OpenStreetMap</span>
+    <span>Réalisé par Ezéchiel Ametovena — Master GAGER, Université de Ngaoundéré · 2026</span>
+</div>
+
+<!-- ══ SPLASH SCREEN ══════════════════════════════════════════════ -->
+<div id="splash-screen">
+    <div class="splash-logos">
+        <img src="logo/logo_univ_ngaoundere.jfif" alt="Université de Ngaoundéré">
+        <span class="sep">·</span>
+        <img src="logo/logo_auf.png" alt="Agence Universitaire de la Francophonie">
+        <span class="sep">·</span>
+        <img src="logo/logo_ogou1.jfif" alt="Région d'Ogou">
+    </div>
+    <div class="splash-title">CartoDyn</div>
+    <div class="splash-subtitle">Analyse spatiale de l'accessibilité aux infrastructures en eau potable</div>
+    <div class="splash-univ">Commune d'Ogou 1, Togo · Master GAGER · Université de Ngaoundéré · 2026</div>
+    <div class="splash-bar-track">
+        <div id="progress-bar"></div>
+    </div>
+    <div id="splash-pct">0 %</div>
+    <div id="splash-msg">Initialisation de la carte…</div>
+</div>
+
+<!-- ══ MODALE D'AIDE ═════════════════════════════════════════════ -->
+<div id="modal-help">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <h2>Guide d'utilisation</h2>
+                <p>Analyse spatiale de l'accessibilité à l'eau potable — Commune d'Ogou 1</p>
+            </div>
+            <button class="modal-close-btn" onclick="window.closeHelp()" title="Fermer">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section">
+                <div class="modal-icon blue">🗺️</div>
+                <div class="modal-section-text">
+                    <h3>Navigation sur la carte</h3>
+                    <p>Molette pour zoomer, cliquez-glissez pour vous déplacer. Les boutons <b>+</b> / <b>−</b> en haut à gauche permettent de zoomer. Le bouton <b>Accueil</b> recadre sur la commune d'Ogou 1.</p>
+                </div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-icon teal">🔲</div>
+                <div class="modal-section-text">
+                    <h3>Couches et ordre</h3>
+                    <p>Le panneau gauche liste toutes les couches par catégorie. Activez / désactivez chaque couche via le bouton à bascule. L'onglet <b>Ordre</b> permet de réorganiser les couches par glisser-déposer.</p>
+                </div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-icon green">💧</div>
+                <div class="modal-section-text">
+                    <h3>Couches disponibles</h3>
+                    <p><b>Accessibilité par canton</b> — proportion de ménages à moins de 500 m d'un point d'eau.<br>
+                    <b>Grille 500 m</b> — analyse fine par maille régulière.<br>
+                    <b>Équipements par canton</b> — niveau d'équipement relatif à la moyenne.<br>
+                    <b>Priorités d'aménagement</b> — zones à cibler en priorité (analyse multicritère).<br>
+                    <b>Points d'eau</b> — bornes fontaines et forages (regroupés par zoom).</p>
+                </div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-icon orange">🖱️</div>
+                <div class="modal-section-text">
+                    <h3>Interaction</h3>
+                    <p><b>Survol</b> : les informations de la zone s'affichent dans le panneau droit.<br>
+                    <b>Clic</b> : fenêtre contextuelle avec le détail complet (canton, score, population, classe).</p>
+                </div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-icon purple">📥</div>
+                <div class="modal-section-text">
+                    <h3>Téléchargement et requêtes</h3>
+                    <p>Chaque couche dispose de boutons <b>GeoJSON</b> et <b>CSV</b>. Le bouton <b>Requêtes</b> permet de filtrer les données par attribut et de télécharger uniquement les entités correspondantes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-access" onclick="window.closeHelp()">Accéder à la carte &nbsp;→</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODALE REQUÊTES ════════════════════════════════════════════ -->
+<div id="modal-query">
+    <div class="query-box">
+        <div class="query-header">
+            <div>
+                <h2>Requêtes &amp; téléchargement</h2>
+                <p>Filtrez les données par attribut et exportez le résultat</p>
+            </div>
+            <button class="modal-close-btn" onclick="window.closeQuery()" title="Fermer">✕</button>
+        </div>
+        <div class="query-body">
+            <div class="q-row">
+                <label>Couche</label>
+                <select id="q-layer" onchange="window.updateQueryFields()">
+                    <option value="commune">Accessibilité / canton</option>
+                    <option value="canton">Équipements / canton</option>
+                    <option value="priorite">Priorités d'aménagement</option>
+                    <option value="equipGrille">Équipements (grille)</option>
+                    <option value="accessGrille">Accessibilité (grille)</option>
+                    <option value="infra">Points d'eau potable</option>
+                </select>
+            </div>
+            <div class="q-row">
+                <label>Champ</label>
+                <select id="q-field" onchange="window.updateQueryValues()"></select>
+            </div>
+            <div class="q-row">
+                <label>Opérateur</label>
+                <select id="q-op" style="flex:0.55">
+                    <option value="eq">= égal</option>
+                    <option value="neq">≠ différent</option>
+                    <option value="contains">contient</option>
+                    <option value="gt">&gt; supérieur</option>
+                    <option value="lt">&lt; inférieur</option>
+                </select>
+                <input type="text" id="q-val" placeholder="valeur…" list="q-val-list" style="flex:1">
+                <datalist id="q-val-list"></datalist>
+            </div>
+            <div class="q-row">
+                <label>Format</label>
+                <select id="q-format">
+                    <option value="geojson">GeoJSON</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+            <div class="q-actions">
+                <button class="q-btn run" onclick="window.runQuery()">Appliquer le filtre</button>
+                <button class="q-btn dl" id="q-dl-btn" disabled onclick="window.downloadQueryResult()">Télécharger le résultat</button>
+            </div>
+            <div class="q-result" id="q-result">Définissez un filtre et cliquez sur "Appliquer"</div>
+            <div class="q-examples">
+                <b>Exemples :</b> reclass_ecart = <i>Sous-équipé</i> · Oldcanton1 = <i>Houdou</i> · Rclas_prop = <i>faible accès</i> · rclass_priori3 = <i>Zone très prioritaire</i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ HEADER ════════════════════════════════════════════════════ -->
+<header id="header">
+    <div id="header-left">
+        <div class="header-logos">
+            <img src="logo/logo_univ_ngaoundere.jfif" alt="Univ. Ngaoundéré">
+            <img src="logo/logo_auf.png" alt="AUF">
+            <img src="logo/logo_ogou1.jfif" alt="Ogou">
+        </div>
+        <div>
+            <h1>Analyse spatiale — Accessibilité aux infrastructures en eau potable, commune d'Ogou 1 au Togo</h1>
+            <div class="subtitle">Master GAGER · Université de Ngaoundéré</div>
+        </div>
+    </div>
+    <nav id="header-nav">
+        <button id="btn-home" title="Recadrer sur la zone d'étude">🏠 Accueil</button>
+        <button id="btn-fullscreen" title="Plein écran">⛶ Plein écran</button>
+        <button onclick="document.getElementById('modal-help').style.display='flex'" title="Aide">❔ Aide</button>
+        <button id="btn-print" title="Imprimer la carte en PDF">🖨 Imprimer (PDF)</button>
+        <a class="btn-memoir"
+           href="https://github.com/Ezechiel18/Portolio_ezechiel/blob/main/Analyse%20spatiale%20de%20l'accessibilit%C3%A9%20%C3%A0%20l'eau/Document/Memoire_GAGER_Ametovena.pdf"
+           target="_blank" title="Consulter le mémoire complet">📄 Consulter le mémoire complet ↗</a>
+    </nav>
+</header>
+
+<!-- ══ APP ════════════════════════════════════════════════════════ -->
+<div id="app">
+
+    <!-- ── SIDEBAR ─────────────────────────────────────────────── -->
+    <aside id="sidebar">
+
+        <!-- Onglets -->
+        <div class="sb-tabs">
+            <div class="sb-tab active" data-panel="panel-couches">Couches</div>
+            <div class="sb-tab" data-panel="panel-ordre">Ordre</div>
+        </div>
+
+        <!-- ── PANEL COUCHES ── -->
+        <div id="panel-couches" class="sb-tab-panel active">
+
+            <!-- Fond de carte -->
+            <div class="sb-section">
+                <div class="sb-section-title">Fond de carte</div>
+                <div class="bm-radio active" data-bm="osm" onclick="window.switchBasemap('osm')">
+                    <div class="bm-swatch" style="background:linear-gradient(135deg,#c8e6c9,#e3f2fd)"></div>
+                    <span class="layer-name">OpenStreetMap</span>
+                    <span class="bm-check">✓</span>
+                </div>
+                <div class="bm-radio" data-bm="satellite" onclick="window.switchBasemap('satellite')">
+                    <div class="bm-swatch" style="background:#2d4a2d"></div>
+                    <span class="layer-name">Satellite (Esri)</span>
+                    <span class="bm-check">✓</span>
+                </div>
+                <div class="bm-radio" data-bm="carto" onclick="window.switchBasemap('carto')">
+                    <div class="bm-swatch" style="background:#f5f5f0;border:0.5px solid #ccc"></div>
+                    <span class="layer-name">CartoDB clair</span>
+                    <span class="bm-check">✓</span>
+                </div>
+                <div class="bm-radio" data-bm="topo" onclick="window.switchBasemap('topo')">
+                    <div class="bm-swatch" style="background:#d4c098"></div>
+                    <span class="layer-name">Topographique</span>
+                    <span class="bm-check">✓</span>
+                </div>
+            </div>
+
+            <!-- Limites administratives -->
+            <div class="sb-section">
+                <div class="sb-section-title">Limites administratives</div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:transparent;border:2px solid #232323"></div>
+                        <span class="layer-name">Limite Ogou 1</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked id="tog-ogou">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('ogou','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('ogou','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend visible">
+                        <div class="mini-legend-item"><div class="mini-swatch-line" style="background:#232323"></div>Contour zone d'étude</div>
+                    </div>
+                </div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:transparent;border:2px solid #e31a1c"></div>
+                        <span class="layer-name">Communes environnantes</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="tog-commenv">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('commEnv','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('commEnv','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend">
+                        <div class="mini-legend-item"><div class="mini-swatch-line" style="background:#e31a1c"></div>Limite communale (contexte)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accessibilité -->
+            <div class="sb-section">
+                <div class="sb-section-title">Accessibilité à l'eau</div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:linear-gradient(90deg,#f7fbff,#73b2d8,#08306b)"></div>
+                        <span class="layer-name">Accessibilité / canton</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked id="tog-commune">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('commune','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('commune','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend visible">
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#f7fbff;border:1px solid #ccc"></div>Faible accès</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#73b2d8"></div>Accès moyen</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#08306b"></div>Bon accès</div>
+                    </div>
+                </div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:linear-gradient(90deg,#fff5f0,#fc8f6f,#c5161c)"></div>
+                        <span class="layer-name">Accessibilité (grille 500 m)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="tog-accessgrille">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('accessGrille','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('accessGrille','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend">
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#fff5f0;border:1px solid #ccc"></div>0 % — Pas d'accès</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#fdccb8"></div>1 à 50 % — Faible accès</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#fc8f6f"></div>51 à 75 % — Accès moyen</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#f44d38"></div>76 à 99 % — Bon accès</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#c5161c"></div>100 % — Accès total</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#969696"></div>Absence de bâtiment</div>
+                    </div>
+                </div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:transparent;border:2px solid #1f78b4"></div>
+                        <span class="layer-name">Zones buffer eau (500 m)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="tog-zoneeau">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('zoneEau','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('zoneEau','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend">
+                        <div class="mini-legend-item"><div class="mini-swatch-line" style="background:#1f78b4"></div>Zone accessible (rayon 500 m)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Équipements -->
+            <div class="sb-section">
+                <div class="sb-section-title">Équipements</div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:linear-gradient(90deg,#35b3eb,#52fdf3,#1f78b4)"></div>
+                        <span class="layer-name">Équipements / canton</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="tog-canton">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('canton','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('canton','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend">
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#1f78b4;opacity:0.56"></div>Bien équipé</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#52fdf3;opacity:0.47"></div>Moyennement équipé</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#35b3eb;opacity:0.19;border:1px solid #aaa"></div>Sous-équipé</div>
+                    </div>
+                </div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:linear-gradient(90deg,#f7fbff,#73b2d8,#08306b)"></div>
+                        <span class="layer-name">Équipements (grille)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="tog-equipgrille">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('equipGrille','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('equipGrille','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend">
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#f7fbff;border:1px solid #ccc"></div>Absence d'équipement</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#c8dcf0"></div>Très peu équipé</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#73b2d8"></div>Peu équipé</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#2979b9"></div>Bien équipé</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#08306b"></div>Très bien équipé</div>
+                    </div>
+                </div>
+
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch" style="background:linear-gradient(90deg,#fff5f0,#fc8f6f,#c5161c)"></div>
+                        <span class="layer-name">Priorités d'aménagement</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="tog-priorite">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('priorite','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('priorite','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend">
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#c5161c"></div>Zone très prioritaire</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#f44d38"></div>Zone très faible priorité</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#fc8f6f"></div>Zone priorité moyenne</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#fdccb8"></div>Zone prioritaire</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#fff5f0;border:1px solid #ccc"></div>Zone peu prioritaire</div>
+                        <div class="mini-legend-item"><div class="mini-swatch" style="background:#cccccb"></div>Absence de logement</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infrastructures -->
+            <div class="sb-section">
+                <div class="sb-section-title">Infrastructures</div>
+                <div class="layer-item">
+                    <div class="layer-row">
+                        <div class="layer-swatch circle" style="background:#2200ff"></div>
+                        <span class="layer-name">Points d'eau potable</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked id="tog-infra">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-dl-btns">
+                        <button class="dl-btn-sm" onclick="window.downloadLayer('infra','geojson')">GeoJSON</button>
+                        <button class="dl-btn-sm secondary" onclick="window.downloadLayer('infra','csv')">CSV</button>
+                    </div>
+                    <div class="mini-legend visible">
+                        <div class="mini-legend-item">
+                            <div class="mini-swatch" style="width:10px;height:10px;border-radius:50%;background:#2200ff"></div>
+                            Borne fontaine / Forage (regroupés)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bouton Requêtes -->
+            <button id="btn-query" onclick="window.openQuery()">🔍 Requêtes &amp; téléchargement filtré</button>
+
+            <!-- Bouton actualiser -->
+            <button id="btn-refresh" onclick="location.reload()">↺ Actualiser la carte</button>
+
+            <!-- Crédits auteur -->
+            <div style="padding:8px 12px 12px;font-size:10px;color:#aaa;margin-top:auto;border-top:1px solid #eee;line-height:1.8">
+                <b style="color:#555">Réalisé par</b> <a href="https://www.linkedin.com/in/ez%C3%A9chiel-ametovena-5a48a1196/" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:none">Ezéchiel Ametovena ↗</a><br>
+                <b>Sources :</b> Géodata Gouv Togo · RGPH-5 · © OSM<br>
+                <b>Projection :</b> WGS 84 (EPSG:4326)<br>
+                <b>Méthode :</b> Buffer 500 m · z-score · PAC · grille 500×500 m
+            </div>
+        </div>
+
+        <!-- ── PANEL ORDRE ── -->
+        <div id="panel-ordre" class="sb-tab-panel">
+            <p class="order-tip">Glissez-déposez pour réorganiser les couches.<br>▲ haut = premier plan &nbsp;·&nbsp; ▼ bas = arrière-plan</p>
+            <ul id="layer-order-list">
+                <li class="order-item" data-id="ord-infra">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">1</span>
+                    <div class="order-swatch circle" style="background:#2200ff;border-radius:50%;width:10px;height:10px"></div>
+                    <span>Points d'eau</span>
+                </li>
+                <li class="order-item" data-id="ord-zoneeau">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">2</span>
+                    <div class="order-swatch" style="background:transparent;border:2px solid #1f78b4"></div>
+                    <span>Zones buffer eau</span>
+                </li>
+                <li class="order-item" data-id="ord-accessgrille">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">3</span>
+                    <div class="order-swatch" style="background:linear-gradient(90deg,#fff5f0,#c5161c)"></div>
+                    <span>Accessibilité grille</span>
+                </li>
+                <li class="order-item" data-id="ord-equipgrille">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">4</span>
+                    <div class="order-swatch" style="background:linear-gradient(90deg,#f7fbff,#08306b)"></div>
+                    <span>Équipements grille</span>
+                </li>
+                <li class="order-item" data-id="ord-priorite">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">5</span>
+                    <div class="order-swatch" style="background:linear-gradient(90deg,#fff5f0,#c5161c)"></div>
+                    <span>Priorités aménagement</span>
+                </li>
+                <li class="order-item" data-id="ord-canton">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">6</span>
+                    <div class="order-swatch" style="background:linear-gradient(90deg,#35b3eb,#1f78b4)"></div>
+                    <span>Équipements canton</span>
+                </li>
+                <li class="order-item" data-id="ord-commune">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">7</span>
+                    <div class="order-swatch" style="background:linear-gradient(90deg,#f7fbff,#08306b)"></div>
+                    <span>Accessibilité canton</span>
+                </li>
+                <li class="order-item" data-id="ord-commenv">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">8</span>
+                    <div class="order-swatch" style="background:transparent;border:2px solid #e31a1c"></div>
+                    <span>Communes environnantes</span>
+                </li>
+                <li class="order-item" data-id="ord-ogou">
+                    <span class="drag-handle">⠿</span>
+                    <span class="order-num">9</span>
+                    <div class="order-swatch" style="background:transparent;border:2px solid #232323"></div>
+                    <span>Limite Ogou 1</span>
+                </li>
+            </ul>
+        </div>
+
+    </aside><!-- /#sidebar -->
+
+    <!-- ── CARTE ───────────────────────────────────────────────── -->
+    <div id="map-wrap">
+        <div id="map"></div>
+        <div class="north-arrow">▲<span>N</span></div>
+    </div>
+
+    <!-- ── BOUTON REPLIER PANNEAU DROIT ───────────────────────── -->
+    <button id="btn-collapse-right" title="Masquer les statistiques">›</button>
+
+    <!-- ── PANNEAU DROIT : STATS ───────────────────────────────── -->
+    <aside id="stats-panel">
+        <div class="stats-header">📊 Informations &amp; Statistiques</div>
+
+        <div id="stats-panel-body">
+
+            <!-- Zone survolée -->
+            <div class="stats-section">
+                <div class="stats-section-title">Zone sélectionnée</div>
+                <div id="info-box">
+                    <p class="info-hint">Survoler une zone pour voir les détails</p>
+                </div>
+            </div>
+
+            <!-- Chiffres clés -->
+            <div class="stats-section">
+                <div class="stats-section-title">Chiffres clés</div>
+                <div class="stat-cards">
+                    <div class="stat-card blue">
+                        <div class="val" id="stat-infra">—</div>
+                        <div class="lbl">Points d'eau potable</div>
+                    </div>
+                    <div class="stat-card teal">
+                        <div class="val">3</div>
+                        <div class="lbl">Cantons analysés</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Équipement par canton (dynamique) -->
+            <div class="stats-section">
+                <div class="stats-section-title">Équipement par canton</div>
+                <div id="canton-cards">
+                    <p style="color:#aaa;font-size:11px;font-style:italic">Chargement…</p>
+                </div>
+            </div>
+
+            <!-- Accès eau par canton (dynamique) -->
+            <div class="stats-section">
+                <div class="stats-section-title">Accès à l'eau par canton (%)</div>
+                <div id="access-bars">
+                    <p style="color:#aaa;font-size:11px;font-style:italic">Chargement…</p>
+                </div>
+            </div>
+
+            <!-- Accès total à l'eau — données mémoire -->
+            <div class="stats-section">
+                <div class="stats-section-title">Zone habitée avec accès total à l'eau</div>
+                <div id="canton-access-stats"></div>
+            </div>
+
+            <!-- Note méthodologique -->
+            <div class="stats-section" style="font-size:10px;color:#666;line-height:1.7;background:#f4f6fa">
+                <div class="stats-section-title">Note méthodologique</div>
+                Densité spatiale · z-score · Proportion d'accessibilité cantonale (PAC) · Grille hexagonale 500×500 m · Analyse multicritère · Hiérarchisation des zones prioritaires · Estimation budgétaire (PMH : ~19,95 M XOF · Borne fontaine : ~12,9 M XOF).<br>
+                <b style="color:#555">Sources :</b> Géodata Gouv Togo · RGPH-5 · © OpenStreetMap.
+            </div>
+
+        </div><!-- /#stats-panel-body -->
+    </aside>
+
+</div><!-- /#app -->
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+<footer id="footer">
+    <div id="footer-left">
+        <span>📍 WGS 84 (EPSG:4326)</span>
+        <span>📂 Géodata Gouv Togo · RGPH-5 · © OpenStreetMap</span>
+    </div>
+    <div id="footer-center">
+        <span id="coords-display">Déplacer la souris sur la carte…</span>
+    </div>
+    <div id="footer-right">
+        Réalisé par <a href="https://www.linkedin.com/in/ez%C3%A9chiel-ametovena-5a48a1196/" target="_blank">Ezéchiel Ametovena</a> · 2026
+    </div>
+</footer>
+
+<!-- ══ SCRIPTS ════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="js/carte.js"></script>
+
+</body>
+</html>
