@@ -9,7 +9,7 @@
 
 ## Présentation
 
-CartoDyn est une carte web interactive développée dans le cadre d'un mémoire de Master en Géomatique, Aménagement et Gestion de l'Environnement et des Ressources (GAGER) à l'Université de Ngaoundéré.
+Cartoeau est une carte web interactive développée dans le cadre d'un mémoire de Master en Géomatique, Aménagement et Gestion de l'Environnement et des Ressources (GAGER) à l'Université de Ngaoundéré.
 
 Elle visualise les résultats d'une **analyse spatiale de l'accessibilité aux infrastructures en eau potable** dans la commune d'Ogou 1 (Togo), en s'appuyant sur des méthodes de géotraitement avancées : densité spatiale, z-score, proportion d'accessibilité cantonale (PAC), grille hexagonale 500 × 500 m, analyse multicritère et hiérarchisation des zones prioritaires.
 
