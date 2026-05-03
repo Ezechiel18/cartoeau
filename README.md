@@ -1,4 +1,4 @@
-# CartoDyn — Carte interactive d'accessibilité à l'eau potable
+# Cartoeau — Carte interactive d'accessibilité à l'eau potable
 
 ### Commune d'Ogou 1, Togo
 
